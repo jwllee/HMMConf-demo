@@ -442,7 +442,6 @@ hs_err_pid*
 # End of https://www.gitignore.io/api/java,eclipse
 
 .svn/
-data/
 image/
 results/
 .eclipse-docker/
