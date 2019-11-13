@@ -463,3 +463,6 @@ core
 venv/
 *.pdf
 *.pdf_tex
+
+# code
+journal/
