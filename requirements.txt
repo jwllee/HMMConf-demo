@@ -16,3 +16,4 @@ seaborn
 notebook
 ipywidgets
 django-crispy-forms
+sorl-thumbnail
