@@ -5,4 +5,5 @@ from . import views
 app_name = 'visualizer'
 urlpatterns = [
     path('', views.index, name='index'),
+    path('upload_data', views.UploadDataView.as_view(), name='upload_data'),
 ]
