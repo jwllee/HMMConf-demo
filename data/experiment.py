@@ -321,9 +321,10 @@ if __name__ == '__main__':
         test_hmmconf_feature = list()
 
         columns = [
-            'log', 'is_train', 'caseid', 'case_prefix', 'activity', 'activityid',
+            'log', 'is_train', 'caseid', 'case_prefix', 'activity', 'activityid', 
             'logfwd_before_obs', 'logfwd',
             'stateconf', 'emitconf', 'finalconf', 
+            'mode_state_before_obs_id', 'mode_state_before_obs', 'mode_state_id', 'mode_state', 
             'injected_distance', 'completeness'
         ]
 
@@ -335,6 +336,8 @@ if __name__ == '__main__':
 
             # compute the log_fwd_before_obs if there is a previous obs
             logfwd_before_str = ''
+            mode_state_before_str = ''
+            mode_state_before_id = -1
             if caseid in tracker:
                 status = tracker[caseid]
                 prev_obs = status.last_event
@@ -348,6 +351,8 @@ if __name__ == '__main__':
                     event, prev_obs, prev_logfwd
                 )
                 logfwd_before_str = np.array_str(logfwd_before, precision=8)
+                mode_state_before_id = np.argmax(logfwd_before)
+                mode_state_before_str = int2state[mode_state_before_id]
 
             logfwd, finalconf, exception = tracker.replay_event(caseid, event)
             emitconf = conf_observer.emitconf[caseid][-1]
@@ -355,11 +360,15 @@ if __name__ == '__main__':
             injected_distance = injected_dist_rows[-1][2]
             completeness = completeness_rows[-1][2]
             logfwd_str = np.array_str(logfwd, precision=8)
+            mode_state_id  = np.argmax(logfwd)
+            mode_state_str = int2state[mode_state_id]
 
             hmmconf_feature = [
                 LOGNAME, True, caseid, case_prefix, activity, event,
                 logfwd_before_str, logfwd_str, 
                 stateconf, emitconf, finalconf,
+                mode_state_before_id, mode_state_before_str,
+                mode_state_id, mode_state_str,
                 injected_distance, completeness
             ]
 
@@ -373,6 +382,8 @@ if __name__ == '__main__':
 
             # compute the log_fwd_before_obs if there is a previous obs
             logfwd_before_str = ''
+            mode_state_before_str = ''
+            mode_state_before_id = -1
             if caseid in tracker:
                 status = tracker[caseid]
                 prev_obs = status.last_event
@@ -386,6 +397,8 @@ if __name__ == '__main__':
                     event, prev_obs, prev_logfwd
                 )
                 logfwd_before_str = np.array_str(logfwd_before, precision=8)
+                mode_state_before_id = np.argmax(logfwd_before)
+                mode_state_before_str = int2state[mode_state_before_id]
 
             logfwd, finalconf, exception = tracker.replay_event(caseid, event)
             emitconf = conf_observer.emitconf[caseid][-1]
@@ -393,11 +406,15 @@ if __name__ == '__main__':
             injected_distance = injected_dist_rows[-1][2]
             completeness = completeness_rows[-1][2]
             logfwd_str = np.array_str(logfwd, precision=8)
+            mode_state_id  = np.argmax(logfwd)
+            mode_state_str = int2state[mode_state_id]
 
             hmmconf_feature = [
                 LOGNAME, False, caseid, case_prefix, activity, event,
                 logfwd_before_str, logfwd_str, 
                 stateconf, emitconf, finalconf,
+                mode_state_before_id, mode_state_before_str,
+                mode_state_id, mode_state_str,
                 injected_distance, completeness
             ]
 
