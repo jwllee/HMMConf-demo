@@ -1,14 +1,40 @@
 from django.shortcuts import render
 from django.views.generic.edit import FormView
+from django.http import JsonResponse
 
 from . import forms, models
 
 
 def index(request):
-    context = {
+    log = models.Log.objects.first()
 
+    # there is no data, so make the user upload something
+    if log is None:
+        return UploadDataView.as_view()
+
+    context = {
+        'log_id': log.id
     }
+
     return render(request, 'demo/index.html', context)
+
+
+def get_barplot_case(request):
+    log_id = request.GET.get('log_id', -1)
+
+    log = models.Log.objects.get(pk=log_id)
+    assert isinstance(log, models.Log)
+
+    case_length_file = log.get_barplot_case_length()
+    unique_activity_file = log.get_barplot_case_unique_activity()
+
+    data = {
+        'barplot_case_length_url': case_length_file.url,
+        'barplot_case_length_name': case_length_file.name,
+        'barplot_case_unique_activity_url': unique_activity_file.url,
+        'barplot_case_unique_activity_name': unique_activity_file.name,
+    }
+    return JsonResponse(data)
 
 
 class UploadDataView(FormView):

@@ -3,15 +3,18 @@ from django.db import models
 from django.dispatch import receiver
 from django.conf import settings
 from sorl.thumbnail import ImageField
+from django.core.files import File
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from django.db.models import Count, Sum
 
 from .utils import make_logger
 from . import utils
 from hmmconf import visualize
 from pm4py.objects.petri.importer import factory as pnml_importer
+import matplotlib.patches as mpatches
 
 
 def get_file_barplot_logfwd_fp(instance, filename):
@@ -34,6 +37,55 @@ def get_file_net_logfwd_before_obs_fp(instance, filename):
     return os.path.join(parent_dir, filename)
 
 
+def get_file_barplot_case_length_fp(instance, filename):
+    parent_dir = os.path.join('images')
+    return os.path.join(parent_dir, filename)
+
+
+def get_file_barplot_case_unique_activity_fp(instance, filename):
+    parent_dir = os.path.join('images')
+    return os.path.join(parent_dir, filename)
+
+
+def make_legend_handlers_and_labels(color_train_conform, color_train_not_conform,
+                                    color_test_conform, color_test_not_conform):
+    patch_train_conform = mpatches.Patch(color=color_train_conform, 
+                                            label='Train + Conform')
+    patch_train_nconform = mpatches.Patch(color=color_train_not_conform, 
+                                            label='Train + Not conform')
+    patch_test_conform = mpatches.Patch(color=color_test_conform,
+                                        label='Test + Conform')
+    patch_test_nconform = mpatches.Patch(color=color_test_not_conform,
+                                            label='Test + Not conform')
+    handles = (
+        patch_train_conform,
+        patch_train_nconform,
+        patch_test_conform,
+        patch_test_nconform
+    )
+
+    labels = (
+        'Train + Conform',
+        'Train + Not conform',
+        'Test + Conform',
+        'Test + Not conform'
+    )
+    return handles, labels
+
+
+def get_xticklabel_interval(xticklabels, interval=10):
+    result = []
+    i = 0
+    for item in xticklabels:
+        xticklabel = item.get_text()
+        if i % interval != 0:
+            xticklabel = ''
+        result.append(xticklabel)
+        i += 1
+
+    return result
+
+
 class Log(models.Model):
     logger = make_logger('Log')
 
@@ -45,6 +97,156 @@ class Log(models.Model):
     file_logemitmat = models.FileField(max_length=500)
     file_logemitmat_d = models.FileField(max_length=500)
     file_confmat = models.FileField(max_length=500)
+
+    file_barplot_case_length = ImageField(
+        max_length=500,
+        upload_to=get_file_barplot_case_length_fp, 
+        blank=True
+    )
+    file_barplot_case_unique_activity = ImageField(
+        max_length=500,
+        upload_to=get_file_barplot_case_unique_activity_fp, 
+        blank=True
+    )
+
+    def get_barplot_case_length(self):
+        if bool(self.file_barplot_case_length) is True:
+            return self.file_barplot_case_length
+
+        # get all events related to this,  
+        events = Event.objects.filter(log__exact=self)
+        case_lengths = events.values('caseid').annotate(case_length=Count('caseid'))
+        case_lengths = case_lengths.annotate(total_injected_distance=Sum('injected_distance'))
+        case_lengths = case_lengths.values_list('caseid', 'case_length', 
+                                                'is_train', 'total_injected_distance')
+
+        columns = ['caseid', 'case_length', 'is_train', 'total_injected_distance']
+        df = pd.DataFrame.from_records(case_lengths, columns=columns)
+        df['caseid'] = df['caseid'].astype(int)
+        df = df.sort_values('caseid')
+
+        color_train_conform, color_test_conform = 'dodgerblue', 'springgreen'
+        color_train_not_conform, color_test_not_conform = 'orangered', 'maroon'
+
+        def get_color(row):
+            if row['is_train'] and np.isclose(row['total_injected_distance'], 0):
+                return color_train_conform
+            elif row['is_train'] and row['total_injected_distance'] > 0: 
+                return color_train_not_conform
+            elif row['is_train'] is False and np.isclose(row['total_injected_distance'], 0):
+                return color_test_conform
+            else:
+                return color_test_not_conform
+                
+        df['color'] = df.apply(get_color, axis=1)
+
+        # make the figure
+        fig, ax = plt.subplots(figsize=(40, 3))
+        ax = sns.barplot(x='caseid', y='case_length', data=df, ax=ax, palette=df['color'].values)
+
+        # rotate xtick labels
+        fontdict = {
+            'rotation': 45
+        }
+        xticklabels = get_xticklabel_interval(ax.get_xticklabels(), interval=10)
+        ax.set_xticklabels(xticklabels, fontdict)
+
+        fig = ax.get_figure()
+
+        # make legend
+        handles, labels = make_legend_handlers_and_labels(
+            color_train_conform, color_train_not_conform,
+            color_test_conform, color_test_not_conform
+        )
+        ax.legend(handles, labels, ncol=2, loc='upper right', frameon=True)
+
+        ax.set_xlabel('Case ID')
+        ax.set_ylabel('Case length')
+
+        fname = '{}-barplot_case_length.png'
+        fname = fname.format(self.name)
+
+        # make temporary directory
+        with tempfile.TemporaryDirectory() as tempdir:
+            png_fp = os.path.join(tempdir, fname)
+            fig.savefig(png_fp, bbox_inches='tight')
+            plt.close()
+
+            # move figure to chart directory
+            with open(png_fp, 'rb') as f:
+                self.file_barplot_case_length.save(fname, File(f), save=True)
+                self.save()
+
+        return self.file_barplot_case_length
+
+
+    def get_barplot_case_unique_activity(self):
+        if bool(self.file_barplot_case_unique_activity) is True:
+            return self.file_barplot_case_unique_activity
+
+        # get all events related to this
+        events = Event.objects.filter(log__exact=self)
+        unique_acts = events.values('caseid').annotate(n_unique_acts=Count('activity_id', distinct=True))
+        unique_acts = unique_acts.annotate(total_injected_distance=Sum('injected_distance'))
+        unique_acts = unique_acts.values_list('caseid', 'n_unique_acts', 'is_train', 'total_injected_distance')
+
+        # make df
+        columns = ['caseid', 'n_unique_acts', 'is_train', 'total_injected_distance']
+        df = pd.DataFrame.from_records(unique_acts, columns=columns)
+        df['caseid'] = df['caseid'].astype(int)
+        df = df.sort_values('caseid')
+
+        color_train_conform, color_test_conform = 'dodgerblue', 'springgreen'
+        color_train_not_conform, color_test_not_conform = 'orangered', 'maroon'
+
+        def get_color(row):
+            if row['is_train'] and np.isclose(row['total_injected_distance'], 0):
+                return color_train_conform
+            elif row['is_train'] and row['total_injected_distance'] > 0: 
+                return color_train_not_conform
+            elif row['is_train'] is False and np.isclose(row['total_injected_distance'], 0):
+                return color_test_conform
+            else:
+                return color_test_not_conform
+                
+        df['color'] = df.apply(get_color, axis=1)
+
+        # make the figure
+        fig, ax = plt.subplots(figsize=(40, 3))
+        sns.barplot(x='caseid', y='n_unique_acts', data=df, ax=ax, palette=df['color'].values)
+
+        # rotate xtick labels
+        fontdict = {
+            'rotation': 45
+        }
+        xticklabels = get_xticklabel_interval(ax.get_xticklabels(), interval=10)
+        ax.set_xticklabels(xticklabels, fontdict)
+
+        ax.set_xlabel('Case ID')
+        ax.set_ylabel('Number of unique activities')
+
+        fig = ax.get_figure()
+        handles, labels = make_legend_handlers_and_labels(
+            color_train_conform, color_train_not_conform,
+            color_test_conform, color_test_not_conform
+        )
+        ax.legend(handles, labels, ncol=2, loc='upper right', frameon=True)
+
+        fname = '{}-barplot_unique_acts.png'
+        fname = fname.format(self.name)
+
+        # make temporary directory
+        with tempfile.TemporaryDirectory() as tempdir:
+            png_fp = os.path.join(tempdir, fname)
+            fig.savefig(png_fp, bbox_inches='tight')
+            plt.close()
+
+            # move figure to chart directory
+            with open(png_fp, 'rb') as f:
+                self.file_barplot_case_unique_activity.save(fname, File(f), save=True)
+                self.save()
+
+        return self.file_barplot_case_unique_activity
 
 
 class State(models.Model):
@@ -259,7 +461,7 @@ def create_objects(file_pnml, file_logstartprob,
                    file_confmat, file_state_csv, file_event_csv, row_limit=10000):
     # read csv
     df = pd.read_csv(file_event_csv.temporary_file_path())
-    log_name = df['log']
+    log_name = df['log'].values[0]
     log = Log.objects.create(
         name=log_name, file_pnml=file_pnml,
         file_logstartprob=file_logstartprob,
@@ -339,6 +541,11 @@ def auto_delete_file_on_delete_log(sender, instance, **kwargs):
     instance.file_logemitmat.delete(save=False)
     instance.file_logemitmat_d.delete(save=False)
     instance.file_confmat.delete(save=False)
+
+    if bool(instance.file_barplot_case_length):
+        instance.file_barplot_case_length.delete(save=False)
+    if bool(instance.file_barplot_case_unique_activity):
+        instance.file_barplot_case_unique_activity.delete(save=False)
 
 
 @receiver(models.signals.post_delete, sender=Event)
