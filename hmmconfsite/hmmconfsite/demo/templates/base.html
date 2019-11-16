@@ -8,9 +8,26 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
         <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.4/dist/bootstrap-table.min.css">
         <link rel="stylesheet" type="text/css" href="{% static 'demo/css/app.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'demo/css/navbar-static-top.css' %}">
         {% block stylesheet %}{% endblock %}
     </head>
     <body>
+        <nav class="navbar navbar-expand-sm navbar-light bg-light navbar-static-top justify-content-end">
+            <a class="navbar-brand" href="{% url 'demo:index' %}">Home</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" 
+                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" 
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    {% block nav-items %}
+                    {% endblock %}
+                </ul>
+            </div>
+            {% block nav-buttons %}
+            {% endblock %}
+        </nav>
         <main role="main" class="container-fluid">
         <div class="jumbotron">
             <h1>{% block pagetitle %}{% endblock %}</h1>

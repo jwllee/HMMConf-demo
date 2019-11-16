@@ -1,15 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block nav-buttons %}
+<button class="btn btn-outline-success ml-auto mr-1"
+    type="button" data-toggle="collapse" data-target="#collapse_barplots"
+    aria-expanded="false" aria-controls="collapse_barplots">Case distribution plots</button>
+{% endblock %}
 {% block content %}
 <div class="row" 
     id="barplot" 
     data-log-id={{ log_id }}
     data-get-barplot-url="{% url 'demo:get_barplot_case' %}">
-    <div class="row-sm" id="barplot_case_length">
-
-    </div>
-    <div class="row-sm" id="barplot_unique_activity">
-
+    <div class="collapse show border rounded p-5" id="collapse_barplots">
+        <div class="row-sm" id="barplot_case_length"></div>
+        <div class="row-sm" id="barplot_unique_activity"></div>
     </div>
 </div>
 {% endblock %}
