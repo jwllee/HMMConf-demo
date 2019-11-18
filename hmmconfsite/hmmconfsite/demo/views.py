@@ -68,8 +68,23 @@ def replay_next_event(request):
     if not next_event:
         next_event = event
 
+    # need to update case event table data
+    case_events = models.Event.objects.filter(
+        caseid__exact=caseid
+    ).order_by('index')
+
+    rows = []
+    for event_i in case_events:
+        row = {
+            'index': event_i.index,
+            'activity_label': event_i.activity,
+            'current': event_i.id == next_event.id,
+        }
+        rows.append(row)
+
     data = {
         'event_id': next_event.id,
+        'case_events': rows,
     }
 
     return JsonResponse(data)

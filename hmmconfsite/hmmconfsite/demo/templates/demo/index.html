@@ -98,6 +98,9 @@
                     var replay_detail = $("#replay_detail");
                     replay_detail.attr("data-event-id", data.event_id);
 
+                    // update case event table
+                    $('#table-event').bootstrapTable('load', data.case_events);
+
                     // update replay detail children here
                 }
             });
