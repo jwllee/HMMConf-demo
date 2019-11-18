@@ -2,23 +2,49 @@
 {% load static %}
 {% block nav-buttons %}
 <button class="btn btn-outline-success ml-auto mr-1"
-    type="button" data-toggle="collapse" data-target="#collapse_barplots"
-    aria-expanded="false" aria-controls="collapse_barplots">Case distribution plots</button>
+    type="button" data-toggle="collapse" data-target="#barplot"
+    aria-expanded="false" aria-controls="barplot">Case distribution plots</button>
 {% endblock %}
+
+{% load crispy_forms_tags %}
+
 {% block content %}
-<div class="row" 
+<div class="card collapse p-3" 
     id="barplot" 
     data-log-id={{ log_id }}
     data-get-barplot-url="{% url 'demo:get_barplot_case' %}">
-    <div class="collapse border rounded p-5" id="collapse_barplots">
+    <div class="card-body">
+        <h5 class="card-title">Case distribution plots</div>
         <div class="row-sm" id="barplot_case_length"></div>
         <div class="row-sm" id="barplot_unique_activity"></div>
     </div>
 </div>
 <div class="row">
     <div class="col-md-2">
+        <form enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            {{ case_select_form | crispy }}
+            <button class="btn btn-primary" type="submit">Update</button>
+        </form>
+        <h5 class="card-title mt-5">Case events</h5>
+        <table
+            id="table-event"
+            class="table-borderless table-sm"
+            data-toggle="table"
+            data-height="250"
+            data-url="{% url 'demo:json_event_stream' event_id %}"
+            data-row-style='RowStyle'>
+            <thead>
+                <tr>
+                    <th data-field='index'>Event index</th>
+                    <th data-field='activity_label'>Activity</th>
+                    <th data-field='current' data-visible="false"></th>
+                </tr>
+            </thead>
+        </table>
     </div>
     <div class="col-md-10">
+
     </div>
 </div>
 {% endblock %}
@@ -57,5 +83,19 @@
             });
 
         });
+    </script>
+    <script>
+        function RowStyle(row, index) {
+            if (row.current) {
+                return {
+                    css: {
+                        'background-color': '#99ff33',
+                    }
+                };
+            }
+            else {
+                return {};
+            }
+        }
     </script>
 {% endblock %}

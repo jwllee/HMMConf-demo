@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic.edit import FormView
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 
 from . import forms, models
 
@@ -12,11 +12,59 @@ def index(request):
     if log is None:
         return UploadDataView.as_view()
 
+    if request.method == 'POST':
+        case_select_form = forms.CaseChoiceSelectForm(request.POST)
+
+        if case_select_form.is_valid():
+            event = case_select_form.cleaned_data['case_select']
+        else:
+            raise Http404('Case ID not found.')
+    else:
+        # try to get caseid and event
+        caseid = request.GET.get('caseid', None)
+
+        if caseid is None:
+            event = models.Event.objects.filter(index__exact=0).first()
+        else:
+            event_id = request.GET.get('event_id')
+            event = models.Event.objects.get(pk=event_id)
+
+        initial = {
+            'case_select': event
+        }
+        case_select_form = forms.CaseChoiceSelectForm(initial=initial)
+
     context = {
-        'log_id': log.id
+        'log_id': log.id,
+        'case_select_form': case_select_form,
+        'caseid': event.caseid,
+        'event_id': event.id,
     }
 
     return render(request, 'demo/index.html', context)
+
+
+def json_event_stream_data(request, event_id):
+    event = models.Event.objects.get(pk=event_id)
+    caseid = event.caseid
+    case_events = models.Event.objects.filter(
+        caseid__exact=caseid
+    ).order_by('index')
+
+    rows = []
+    for event_i in case_events:
+        row = {
+            'index': event_i.index,
+            'activity_label': event_i.activity,
+            'current': event_i.id == event.id
+        }
+        rows.append(row)
+
+    data = {
+        'rows': rows
+    }
+
+    return JsonResponse(data)
 
 
 def get_barplot_case(request):

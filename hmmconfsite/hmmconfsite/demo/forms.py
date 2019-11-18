@@ -1,6 +1,8 @@
 from django import forms
 
 
+from . import models
+
 
 def validate_filename_extension(filename, *exts):
     cond = False
@@ -36,3 +38,18 @@ class UploadDataForm(forms.Form):
     file_event_csv = forms.FileField(validators=[validate_file_csv])
 
 
+class CaseChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        str_ = '{:<8} - {}'
+        is_train = 'train' if obj.is_train else 'test'
+        str_ = str_.format(obj.caseid, is_train)
+        return str_
+
+
+class CaseChoiceSelectForm(forms.Form):
+    case_select = CaseChoiceField(queryset=None, label='Replay case')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        first_events = models.Event.objects.filter(index__exact=0)
+        self.fields['case_select'].queryset = first_events
