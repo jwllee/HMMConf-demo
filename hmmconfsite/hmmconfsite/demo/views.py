@@ -76,7 +76,8 @@ def replay_next_event(request):
     rows = []
     for event_i in case_events:
         row = {
-            'index': event_i.index,
+            # so that it's not 0-index
+            'index': event_i.index + 1,
             'activity_label': event_i.activity,
             'current': event_i.id == next_event.id,
         }
@@ -100,7 +101,8 @@ def json_event_stream_data(request, event_id):
     rows = []
     for event_i in case_events:
         row = {
-            'index': event_i.index,
+            # so that it's not 0-index
+            'index': event_i.index + 1,
             'activity_label': event_i.activity,
             'current': event_i.id == event.id
         }
