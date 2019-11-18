@@ -21,12 +21,14 @@
 </div>
 <div class="row">
     <div class="col-md-2">
+        <h5 class="card-title">Choose case to replay:</h5>
+        <hr class="mt-0 mb-4">
         <form enctype="multipart/form-data" method="post">
             {% csrf_token %}
             {{ case_select_form | crispy }}
             <button class="btn btn-primary" type="submit">Update</button>
         </form>
-        <h5 class="card-title mt-5">Case events</h5>
+        <h5 class="card-title mt-5">Case events:</h5>
         <table
             id="table-event"
             class="table-borderless table-sm"
