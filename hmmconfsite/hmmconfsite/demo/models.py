@@ -125,8 +125,8 @@ class Log(models.Model):
         df['caseid'] = df['caseid'].astype(int)
         df = df.sort_values('caseid')
 
-        color_train_conform, color_test_conform = 'dodgerblue', 'springgreen'
-        color_train_not_conform, color_test_not_conform = 'orangered', 'maroon'
+        color_train_conform, color_test_conform = 'dodgerblue', 'yellowgreen'
+        color_train_not_conform, color_test_not_conform = 'orange', 'mediumvioletred'
 
         def get_color(row):
             if row['is_train'] and np.isclose(row['total_injected_distance'], 0):
@@ -196,8 +196,8 @@ class Log(models.Model):
         df['caseid'] = df['caseid'].astype(int)
         df = df.sort_values('caseid')
 
-        color_train_conform, color_test_conform = 'dodgerblue', 'springgreen'
-        color_train_not_conform, color_test_not_conform = 'orangered', 'maroon'
+        color_train_conform, color_test_conform = 'dodgerblue', 'yellowgreen'
+        color_train_not_conform, color_test_not_conform = 'orange', 'mediumvioletred'
 
         def get_color(row):
             if row['is_train'] and np.isclose(row['total_injected_distance'], 0):
