@@ -3,6 +3,10 @@ from django.views.generic.edit import FormView
 from django.http import JsonResponse, Http404
 
 from . import forms, models
+from .utils import make_logger
+
+
+logger = make_logger('views.py')
 
 
 def index(request):
@@ -17,6 +21,7 @@ def index(request):
 
         if case_select_form.is_valid():
             event = case_select_form.cleaned_data['case_select']
+            event_id = event.id
         else:
             raise Http404('Case ID not found.')
     else:
@@ -25,9 +30,13 @@ def index(request):
 
         if caseid is None:
             event = models.Event.objects.filter(index__exact=0).first()
+            event_id = event.id
         else:
             event_id = request.GET.get('event_id')
-            event = models.Event.objects.get(pk=event_id)
+            event = models.Event.objects.filter(
+                caseid__exact=event.caseid,
+                index__exact=0,
+            ).first()
 
         initial = {
             'case_select': event
@@ -38,10 +47,32 @@ def index(request):
         'log_id': log.id,
         'case_select_form': case_select_form,
         'caseid': event.caseid,
-        'event_id': event.id,
+        'event_id': event_id,
     }
 
     return render(request, 'demo/index.html', context)
+
+
+def replay_next_event(request):
+    event_id = request.GET.get('event_id', -1)
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    caseid = event.caseid
+    next_event = models.Event.objects.filter(
+        caseid__exact=caseid,
+        index__gt=event.index,
+    ).order_by('index').first()
+
+    # if there is no next event, just use the current event
+    if not next_event:
+        next_event = event
+
+    data = {
+        'event_id': next_event.id,
+    }
+
+    return JsonResponse(data)
 
 
 def json_event_stream_data(request, event_id):

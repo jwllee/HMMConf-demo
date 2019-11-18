@@ -20,7 +20,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-2">
+    <div class="col-md-3">
         <h5 class="card-title">Choose case to replay:</h5>
         <hr class="mt-0 mb-4">
         <form enctype="multipart/form-data" method="post">
@@ -44,9 +44,17 @@
                 </tr>
             </thead>
         </table>
+        <button 
+            class="btn btn-primary mt-3" 
+            id="next_event"
+            onclick="replay_next_event()">
+            Next event</button>
     </div>
-    <div class="col-md-10">
-
+    <div 
+        class="col-md-10" 
+        id="replay_detail" 
+        data-event-id="{{ event_id }}"
+        data-replay-next-event-url="{% url 'demo:replay_next_event' %}">
     </div>
 </div>
 {% endblock %}
@@ -98,6 +106,35 @@
             else {
                 return {};
             }
+        }
+    </script>
+    <!--Script to replay next event-->
+    <script>
+        function replay_next_event() {
+            var event_id = $("div #replay_detail").attr('data-event-id');
+            var url = $("div #replay_detail").attr('data-replay-next-event-url');
+
+            info_msg = 'Calling url: ' + url + ' to replay next event after event: ' + event_id;
+            console.log(info_msg);
+
+            $.ajax({
+                url: url,
+                data: {
+                    'csrfmiddlewaretoken': Cookies.get('csrftoken'),
+                    'event_id': event_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    info_msg = 'Got next event id: ' + data.event_id;
+                    console.log(info_msg);
+
+                    // update replay_detail
+                    var replay_detail = $("#replay_detail");
+                    replay_detail.attr("data-event-id", data.event_id);
+
+                    // update replay detail children here
+                }
+            });
         }
     </script>
 {% endblock %}
