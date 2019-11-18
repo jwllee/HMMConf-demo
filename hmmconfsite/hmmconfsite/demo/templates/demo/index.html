@@ -10,9 +10,15 @@
     id="barplot" 
     data-log-id={{ log_id }}
     data-get-barplot-url="{% url 'demo:get_barplot_case' %}">
-    <div class="collapse show border rounded p-5" id="collapse_barplots">
+    <div class="collapse border rounded p-5" id="collapse_barplots">
         <div class="row-sm" id="barplot_case_length"></div>
         <div class="row-sm" id="barplot_unique_activity"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-10">
     </div>
 </div>
 {% endblock %}
