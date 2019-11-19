@@ -195,7 +195,27 @@ def retrieve_record(request):
 
 
 def state_transition(request):
-    pass
+    event_id = request.GET.get('event_id', -1);
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    # just return the current estimation if it's the first event
+    # otherwise do the state transition
+    if event.index == 0:
+        return retrieve_record(request)
+    else:
+        file_barplot_state = event.get_file_barplot_logfwd_before_obs()
+        file_net_state = event.get_file_net_logfwd_before_obs()
+
+        data = {
+            'event_id': event_id,
+            'barplot_state_url': file_barplot_state.url,
+            'barplot_state_name': file_barplot_state.name,
+            'net_state_url': file_net_state.url,
+            'net_state_name': file_net_state.name,
+        }
+
+        return JsonResponse(data)
 
 
 def observation_update(request):

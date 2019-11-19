@@ -90,6 +90,20 @@
                 <h6 class="card-subtitle mb-2 text-muted">
                     Previous event transitions previous state estimation
                 </h6>
+                <div class="row justify-content-md-center">
+                    <div class="col-4">
+                        <img 
+                            class="img-fluid" 
+                            id="barplot-transition-state" 
+                            alt="State estimation after state transition from previous event"/>
+                    </div>
+                    <div class="col-7">
+                        <img 
+                            class="img-fluid" 
+                            id="net-transition-state" 
+                            alt="Model highlighted with mode state estimation after state transition from previous event"/>
+                    </div>
+                </div>
             </div>
         </div>
         <div 
@@ -159,9 +173,34 @@
             });
         }
 
+        function state_transition(event_id) {
+            var url = $("div #state-transition").attr('data-state-transition-url');
+
+            info_msg = 'Getting images of state transition for event: ' + event_id + ', url: ' + url;
+            console.log(info_msg);
+
+            $.ajax({
+                url: url,
+                data: {
+                    'csrfmiddlewaretoken': Cookies.get('csrftoken'),
+                    'event_id': event_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    info_msg = 'Got images of state transition for event: ' + data.event_id;
+                    console.log(info_msg);
+
+                    // update figures
+                    $("#barplot-transition-state").attr('src', data.barplot_state_url);
+                    $("#net-transition-state").attr('src', data.net_state_url);
+                }
+            });
+        }
+
         $(document).ready(function() {
             var event_id = $("div #replay_detail").attr('data-event-id');
             retrieve_record(event_id);
+            state_transition(event_id);
         });
 
         function replay_next_event() {
@@ -191,6 +230,7 @@
 
                     // update replay detail children here
                     retrieve_record(data.event_id);
+                    state_transition(data.event_id);
                 }
             });
         }
