@@ -12,7 +12,7 @@
         {% block stylesheet %}{% endblock %}
     </head>
     <body>
-        <nav class="navbar navbar-expand-sm navbar-light bg-light navbar-static-top justify-content-end">
+        <nav class="navbar navbar-expand-sm navbar-light bg-light fixed-top navbar-static-top justify-content-end">
             <a class="navbar-brand" href="{% url 'demo:index' %}">Home</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" 
                 data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" 
@@ -29,7 +29,7 @@
             {% endblock %}
         </nav>
         <main role="main" class="container-fluid">
-        <div class="jumbotron p-0">
+        <div class="jumbotron p-4">
             <h1>{% block pagetitle %}{% endblock %}</h1>
             {% block content %}{% endblock %}
         </div>
