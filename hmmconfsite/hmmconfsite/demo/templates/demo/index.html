@@ -69,26 +69,29 @@
         data-replay-previous-event-url="{% url 'demo:replay_previous_event' %}"
         data-replay-next-event-url="{% url 'demo:replay_next_event' %}">
         <div 
-            class="card mb-3"
+            class="card mb-3 p-2"
             id="retrieve-record"
             data-retrieve-record-url="{% url 'demo:retrieve_record' %}">
-            <div class="card-body">
-                <h5 class="card-title">1. Retrieve record</h5>
-                <h6 class="card-subtitle mb-2 text-muted">
-                    Retrieve previous state estimation or initial state estimation
-                </h6>
-                <div class="row justify-content-md-center">
-                    <div class="col-4">
-                        <img 
-                            class="img-fluid" 
-                            id="barplot-start-state" 
-                            alt="State estimation"/>
-                    </div>
-                    <div class="col-7">
-                        <img 
-                            class="img-fluid" 
-                            id="net-start-state" 
-                            alt="Model highlighted with mode state estimation"/>
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img 
+                        class="img-fluid" 
+                        id="barplot-start-state" 
+                        alt="State estimation"/>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">1. Retrieve record</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            Retrieve previous state estimation or initial state estimation
+                        </h6>
+                        <div class="row justify-content-md-center">
+                            <img 
+                                class="img-fluid" 
+                                style="max-height: 270px;"
+                                id="net-start-state" 
+                                alt="Model highlighted with mode state estimation"/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -97,23 +100,26 @@
             class="card mb-3"
             id="state-transition"
             data-state-transition-url="{% url 'demo:state_transition' %}">
-            <div class="card-body">
-                <h5 class="card-title">2. State transition</h5>
-                <h6 class="card-subtitle mb-2 text-muted">
-                    Previous event transitions previous state estimation
-                </h6>
-                <div class="row justify-content-md-center">
-                    <div class="col-4">
-                        <img 
-                            class="img-fluid" 
-                            id="barplot-transition-state" 
-                            alt="State estimation after state transition from previous event"/>
-                    </div>
-                    <div class="col-7">
-                        <img 
-                            class="img-fluid" 
-                            id="net-transition-state" 
-                            alt="Model highlighted with mode state estimation after state transition from previous event"/>
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img 
+                        class="img-fluid" 
+                        id="barplot-transition-state" 
+                        alt="State estimation after state transition from previous event"/>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">2. State transition</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            Previous event transitions previous state estimation
+                        </h6>
+                        <div class="row justify-content-md-center">
+                            <img 
+                                class="img-fluid" 
+                                style="max-height: 270px;"
+                                id="net-transition-state" 
+                                alt="Model highlighted with mode state estimation after state transition from previous event"/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -122,23 +128,26 @@
             class="card mb-3"
             id="observation-update"
             data-observation-update-url="{% url 'demo:observation_update' %}">
-            <div class="card-body">
-                <h5 class="card-title">3. Observation update</h5>
-                <h6 class="card-subtitle mb-2 text-muted">
-                    Use current event to update state estimation
-                </h6>
-                <div class="row justify-content-md-center">
-                    <div class="col-4">
-                        <img 
-                            class="img-fluid" 
-                            id="barplot-observation-state" 
-                            alt="State estimation after update with current event"/>
-                    </div>
-                    <div class="col-7">
-                        <img 
-                            class="img-fluid" 
-                            id="net-observation-state" 
-                            alt="Model highlighted with mode state estimation after update with current event"/>
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img 
+                        class="img-fluid" 
+                        id="barplot-observation-state" 
+                        alt="State estimation after update with current event"/>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">3. Observation update</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            Use current event to update state estimation
+                        </h6>
+                        <div class="row justify-content-md-center">
+                            <img 
+                                class="img-fluid" 
+                                style="max-height: 270px;"
+                                id="net-observation-state" 
+                                alt="Model highlighted with mode state estimation after update with current event"/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -147,36 +156,38 @@
             class="card mb-3"
             id="compute-conformance"
             data-compute-conformance-url="{% url 'demo:compute_conformance' %}">
-            <div class="card-body">
-                <h5 class="card-title">4. Conformance computation</h5>
-                <h6 class="card-subtitle mb-2 text-muted">
-                    Compute conformance between state estimation and current event
-                </h6>
-                <div class="row justify-content-md-center">
-                    <div class="col-4">
-                        <img 
-                            class="img-fluid"
-                            id="barplot-final-state"
-                            alt="Final state estimation"/>
-                    </div>
-                    <div class="col-md-auto">
-                        <table
-                            id="table-conformance"
-                            class="table-sm"
-                            data-toggle="table"
-                            data-url="{% url 'demo:json_conformance' event_id %}"
-                            data-row-style='RowStyle'>
-                            <thead>
-                                <tr>
-                                    <th 
-                                        data-field='attribute'
-                                        data-width='200'>Attribute</th>
-                                    <th 
-                                        data-field='value'
-                                        data-width='150'>Value</th>
-                                </tr>
-                            </thead>
-                        </table>
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img 
+                        class="img-fluid"
+                        id="barplot-final-state"
+                        alt="Final state estimation"/>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">4. Conformance computation</h5>
+                        <h6 class="card-subtitle mb-3 text-muted">
+                            Compute conformance between state estimation and current event
+                        </h6>
+                        <div class="row pl-3">
+                            <table
+                                id="table-conformance"
+                                class="table-sm"
+                                data-toggle="table"
+                                data-url="{% url 'demo:json_conformance' event_id %}"
+                                data-row-style='RowStyle'>
+                                <thead>
+                                    <tr>
+                                        <th 
+                                            data-field='attribute'
+                                            data-width='200'>Attribute</th>
+                                        <th 
+                                            data-field='value'
+                                            data-width='150'>Value</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
