@@ -82,8 +82,9 @@
                 <div class="col-md-8">
                     <div class="card-body">
                         <h5 class="card-title">1. Retrieve record</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">
-                            Retrieve previous state estimation or initial state estimation
+                        <h6 class="card-subtitle mb-3 text-muted">
+                            When a new event comes in, the last state estimation of the corresponding case is retrieved. If the 
+                            new event is the first observed event of the case, then the initial state estimation of the process is used.
                         </h6>
                         <div class="row justify-content-md-center">
                             <img 
@@ -111,7 +112,8 @@
                     <div class="card-body">
                         <h5 class="card-title">2. State transition</h5>
                         <h6 class="card-subtitle mb-2 text-muted">
-                            Previous event transitions previous state estimation
+                            If there is a previous event, then we need to account for the state-transition probability from each state
+                            of the previous state estimation. Otherwise, no changes are made to the state estimation from the previous step.
                         </h6>
                         <div class="row justify-content-md-center">
                             <img 
@@ -139,7 +141,7 @@
                     <div class="card-body">
                         <h5 class="card-title">3. Observation update</h5>
                         <h6 class="card-subtitle mb-2 text-muted">
-                            Use current event to update state estimation
+                            The information from the current observed event is incorporated into the current state estimation.
                         </h6>
                         <div class="row justify-content-md-center">
                             <img 
@@ -167,7 +169,8 @@
                     <div class="card-body">
                         <h5 class="card-title">4. Conformance computation</h5>
                         <h6 class="card-subtitle mb-3 text-muted">
-                            Compute conformance between state estimation and current event
+                            Having computed the final state estimation, conformance of the event is computed with
+                            respect to the state estimation. 
                         </h6>
                         <div class="row pl-3">
                             <table
