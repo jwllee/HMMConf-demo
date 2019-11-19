@@ -53,6 +53,44 @@ def index(request):
     return render(request, 'demo/index.html', context)
 
 
+def replay_previous_event(request):
+    event_id = request.GET.get('event_id', -1)
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    caseid = event.caseid
+    prev_event = models.Event.objects.filter(
+        caseid__exact=caseid,
+        index__lt=event.index,
+    ).order_by('index').last()
+
+    # if there is no next event, just use the current event
+    if not prev_event:
+        prev_event = event
+
+    # need to update case event table data
+    case_events = models.Event.objects.filter(
+        caseid__exact=caseid
+    ).order_by('index')
+
+    rows = []
+    for event_i in case_events:
+        row = {
+            # so that it's not 0-index
+            'index': event_i.index + 1,
+            'activity_label': event_i.activity,
+            'current': event_i.id == prev_event.id,
+        }
+        rows.append(row)
+
+    data = {
+        'event_id': prev_event.id,
+        'case_events': rows,
+    }
+
+    return JsonResponse(data)
+
+
 def replay_next_event(request):
     event_id = request.GET.get('event_id', -1)
     event = models.Event.objects.get(pk=event_id)

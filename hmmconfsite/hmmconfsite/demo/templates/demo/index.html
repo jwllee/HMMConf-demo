@@ -46,18 +46,27 @@
                     </tr>
                 </thead>
             </table>
-            <button 
-                class="btn btn-primary mt-3" 
-                id="next_event"
-                onclick="replay_next_event()">
-                Next event
-            </button>
+            <div class="button-group">
+                <button
+                    class="btn btn-primary mt-3" 
+                    id="previous_event"
+                    onclick="replay_previous_event()">
+                    Previous event
+                </button>
+                <button 
+                    class="btn btn-primary mt-3" 
+                    id="next_event"
+                    onclick="replay_next_event()">
+                    Next event
+                </button>
+            </div>
         </div>
     </div>
     <div 
         class="col-8 col-md-9" 
         id="replay_detail" 
         data-event-id="{{ event_id }}"
+        data-replay-previous-event-url="{% url 'demo:replay_previous_event' %}"
         data-replay-next-event-url="{% url 'demo:replay_next_event' %}">
         <div 
             class="card mb-3"
@@ -244,6 +253,39 @@
             state_transition(event_id);
             observation_update(event_id);
         });
+
+        function replay_previous_event() {
+            var event_id = $("div #replay_detail").attr('data-event-id');
+            var url = $("div #replay_detail").attr('data-replay-previous-event-url');
+
+            info_msg = 'Calling url: ' + url + ' to replay previous event before event: ' + event_id;
+            console.log(info_msg);
+
+            $.ajax({
+                url: url,
+                data: {
+                    'csrfmiddlewaretoken': Cookies.get('csrftoken'),
+                    'event_id': event_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    info_msg = 'Got previous event id: ' + data.event_id;
+                    console.log(info_msg);
+
+                    // update replay_detail
+                    var replay_detail = $("#replay_detail");
+                    replay_detail.attr("data-event-id", data.event_id);
+
+                    // update case event table
+                    $('#table-event').bootstrapTable('load', data.case_events);
+
+                    // update replay detail children here
+                    retrieve_record(data.event_id);
+                    state_transition(data.event_id);
+                    observation_update(data.event_id);
+                }
+            });
+        }
 
         function replay_next_event() {
             var event_id = $("div #replay_detail").attr('data-event-id');
