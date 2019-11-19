@@ -17,6 +17,9 @@ from pm4py.objects.petri.importer import factory as pnml_importer
 import matplotlib.patches as mpatches
 
 
+logger = make_logger('models.py')
+
+
 def get_file_barplot_logfwd_fp(instance, filename):
     parent_dir = os.path.join('images', 'barplot', 'logfwd')
     return os.path.join(parent_dir, filename)
@@ -43,6 +46,16 @@ def get_file_barplot_case_length_fp(instance, filename):
 
 
 def get_file_barplot_case_unique_activity_fp(instance, filename):
+    parent_dir = os.path.join('images')
+    return os.path.join(parent_dir, filename)
+
+
+def get_file_barplot_logstartprob_fp(instance, filename):
+    parent_dir = os.path.join('images')
+    return os.path.join(parent_dir, filename)
+
+
+def get_file_net_logstartprob_fp(instance, filename):
     parent_dir = os.path.join('images')
     return os.path.join(parent_dir, filename)
 
@@ -86,6 +99,63 @@ def get_xticklabel_interval(xticklabels, interval=10):
     return result
 
 
+def make_neglogfwd_barplot(logfwd, highlight_color='lawngreen'):
+    state_list = State.objects.values_list('state', flat=True).order_by('state_id')
+    df = pd.DataFrame({
+        'state': state_list,
+        'logprob': logfwd,
+    }).replace([-np.inf], -1e8)
+    df['neg_logprob'] = -df['logprob']
+
+    fig, ax = plt.subplots()
+    min_negprob = df['neg_logprob'].min()
+    clrs = ['grey' if x > min_negprob else highlight_color for x in df['neg_logprob'].values]
+    sns.barplot(x='state', y='neg_logprob', data=df, ax=ax, palette=clrs)
+
+    # rotate xtick labels
+    for item in ax.get_xticklabels():
+        item.set_rotation(45)
+
+    return fig, ax
+
+
+def read_pnml():
+    log = Log.objects.first()
+    # for some reason it just works by passing the file object...
+    net, init_marking, final_marking = pnml_importer.apply(log.file_pnml)
+    return net, init_marking, final_marking
+
+
+def make_highlighted_net(logfwd, highlight_color='greenyellow'):
+    net, init_marking, final_marking = read_pnml()
+    state_list = State.objects.values_list('state', flat=True).order_by('state_id')
+    highlight_state_id = np.argmax(logfwd)
+
+    # info_msg = 'State_list: {}, highlight_state_id: {}'
+    # info_msg = info_msg.format(state_list, highlight_state_id)
+    # logger.info(info_msg)
+
+    # query set list is a generator so cannot directly index it
+    highlight_state = None
+    for index, state in enumerate(state_list):
+        if index == highlight_state_id:
+            highlight_state = state
+            break
+
+    graph_attr = {
+        'background': 'white',
+        'rankdir': 'LR',
+    }
+
+    dot_g = visualize.petrinet2dot(
+        net, init_marking, final_marking, 
+        highlight_state, highlight_color=highlight_color,
+        graph_attr=graph_attr
+    )
+
+    return dot_g
+
+
 class Log(models.Model):
     logger = make_logger('Log')
 
@@ -106,6 +176,18 @@ class Log(models.Model):
     file_barplot_case_unique_activity = ImageField(
         max_length=500,
         upload_to=get_file_barplot_case_unique_activity_fp, 
+        blank=True
+    )
+
+    file_barplot_logstartprob = ImageField(
+        max_length=500,
+        upload_to=get_file_barplot_logstartprob_fp,
+        blank=True
+    )
+
+    file_net_logstartprob = ImageField(
+        max_length=500,
+        upload_to=get_file_net_logstartprob_fp,
         blank=True
     )
 
@@ -248,6 +330,54 @@ class Log(models.Model):
 
         return self.file_barplot_case_unique_activity
 
+    def get_file_barplot_logstartprob(self):
+        if bool(self.file_barplot_logstartprob) is True:
+            return self.file_barplot_logstartprob
+
+        # create the negative log forward probability bar plot
+        logfwd = np.load(self.file_logstartprob)
+        fig, ax = make_neglogfwd_barplot(logfwd)
+        fig = ax.get_figure()
+
+        fname = '{}-logstartprob-barplot_neglogfwd.png'
+        fname = fname.format(self.name)
+
+        # make temporary directory
+        with tempfile.TemporaryDirectory() as tempdir:
+            png_fp = os.path.join(tempdir, fname)
+            fig.savefig(png_fp, bbox_inches='tight')
+            plt.close()
+
+            # move figure to chart directory
+            with open(png_fp, 'rb') as f:
+                self.file_barplot_logstartprob.save(fname, File(f), save=True)
+                self.save()
+
+        return self.file_barplot_logstartprob
+
+    def get_file_net_logstartprob(self):
+        if bool(self.file_net_logstartprob) is True:
+            return self.file_net_logstartprob
+
+        # create the highlighted net
+        logfwd = np.load(self.file_logstartprob)
+        dot_g = make_highlighted_net(logfwd)
+
+        # make temporary directory
+        with tempfile.TemporaryDirectory() as tempdir:
+            fname = '{}-logstartprob-net'
+            fname = fname.format(self.name)
+            png_fname = '{}.png'.format(fname)
+
+            dot_g.render(fname, tempdir, format='png', cleanup=True)
+            png_fp = os.path.join(tempdir, png_fname)
+
+            with open(png_fp, 'rb') as f:
+                self.file_net_logstartprob.save(png_fname, File(f), save=True)
+                self.save()
+
+        return self.file_net_logstartprob
+
 
 class State(models.Model):
     log = models.ForeignKey(Log, on_delete=models.CASCADE)
@@ -259,53 +389,6 @@ class State(models.Model):
         repr_ = repr_.format(State.__name__,
                              self.state, self.state_id)
         return repr_
-
-
-def make_neglogfwd_barplot(logfwd, highlight_color='lawngreen'):
-    state_list = State.objects.values_list('state', flat=True).order_by('state_id')
-    df = pd.DataFrame({
-        'state': state_list,
-        'logprob': logfwd,
-    }).replace([-np.inf], -1e8)
-    df['neg_logprob'] = -df['logprob']
-
-    fig, ax = plt.subplots()
-    min_negprob = df['neg_logprob'].min()
-    clrs = ['grey' if x > min_negprob else highlight_color for x in df['neg_logprob'].values]
-    sns.barplot(x='state', y='neg_logprob', data=df, ax=ax, palette=clrs)
-
-    # rotate xtick labels
-    for item in ax.get_xticklabels():
-        item.set_rotation(45)
-
-    return fig, ax
-
-
-def read_pnml():
-    log = Log.objects.first()
-    net_fp = log.file_pnml.path
-    net, init_marking, final_marking = pnml_importer.apply(net_fp)
-    return net, init_marking, final_marking
-
-
-def make_highlighted_net(logfwd, highlight_color='greenyellow'):
-    net, init_marking, final_marking = read_pnml()
-    state_list = State.objects.values_list('state', flat=True).order_by('state_id')
-    highlight_state_id = np.argmax(logfwd)
-    highlight_state = state_list[highlight_state_id]
-
-    graph_attr = {
-        'background': 'white',
-        'rankdir': 'LR',
-    }
-
-    dot_g = visualize.petrinet2dot(
-        net, init_marking, final_marking, 
-        highlight_state, highlight_color=highlight_color,
-        graph_attr=graph_attr
-    )
-
-    return dot_g
 
 
 class Event(models.Model):
@@ -546,6 +629,10 @@ def auto_delete_file_on_delete_log(sender, instance, **kwargs):
         instance.file_barplot_case_length.delete(save=False)
     if bool(instance.file_barplot_case_unique_activity):
         instance.file_barplot_case_unique_activity.delete(save=False)
+    if bool(instance.file_barplot_startprob):
+        instance.file_barplot_startprob.delete(save=False)
+    if bool(instance.file_net_startprob):
+        instance.file_net_startprob.delete(save=False)
 
 
 @receiver(models.signals.post_delete, sender=Event)

@@ -161,3 +161,46 @@ class UploadDataView(FormView):
         )
 
         return super().form_valid(form)
+
+
+def retrieve_record(request):
+    event_id = request.GET.get('event_id', -1)
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    # get previous state estimation or initial estimation
+    if event.index == 0:
+        # get initial estimation
+        file_barplot_state = event.log.get_file_barplot_logstartprob()
+        file_net_state = event.log.get_file_net_logstartprob()
+    else:
+        # the previous event's final state estimation
+        prev_event = models.Event.objects.filter(
+            index__exact=event.index - 1,
+            caseid__exact=event.caseid
+        ).first()
+        assert isinstance(prev_event, models.Event)
+        file_barplot_state = prev_event.get_file_barplot_logfwd()
+        file_net_state = prev_event.get_file_net_logfwd()
+
+    data = {
+        'event_id': event_id,
+        'barplot_state_url': file_barplot_state.url,
+        'barplot_state_name': file_barplot_state.name,
+        'net_state_url': file_net_state.url,
+        'net_state_name': file_net_state.name,
+    }
+
+    return JsonResponse(data)
+
+
+def state_transition(request):
+    pass
+
+
+def observation_update(request):
+    pass
+
+
+def compute_conformance(request):
+    pass
