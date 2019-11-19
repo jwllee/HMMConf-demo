@@ -195,7 +195,7 @@ def retrieve_record(request):
 
 
 def state_transition(request):
-    event_id = request.GET.get('event_id', -1);
+    event_id = request.GET.get('event_id', -1)
     event = models.Event.objects.get(pk=event_id)
     assert isinstance(event, models.Event)
 
@@ -219,7 +219,22 @@ def state_transition(request):
 
 
 def observation_update(request):
-    pass
+    event_id = request.GET.get('event_id', -1)
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    file_barplot_state = event.get_file_barplot_logfwd()
+    file_net_state = event.get_file_net_logfwd()
+
+    data = {
+        'event_id': event_id,
+        'barplot_state_url': file_barplot_state.url,
+        'barplot_state_name': file_barplot_state.name,
+        'net_state_url': file_net_state.url,
+        'net_state_name': file_net_state.name,
+    }
+
+    return JsonResponse(data)
 
 
 def compute_conformance(request):
