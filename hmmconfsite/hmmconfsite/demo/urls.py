@@ -13,5 +13,6 @@ urlpatterns = [
     path('ajax/retrieve_record', views.retrieve_record, name='retrieve_record'),
     path('ajax/state_transition', views.state_transition, name='state_transition'),
     path('ajax/observation_update', views.observation_update, name='observation_update'),
+    path('json_conformance_data/<int:event_id>', views.json_conformance_data, name='json_conformance'),
     path('ajax/compute_conformance', views.compute_conformance, name='compute_conformance'),
 ]

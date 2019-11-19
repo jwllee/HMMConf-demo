@@ -61,8 +61,8 @@ def replay_previous_event(request):
     caseid = event.caseid
     prev_event = models.Event.objects.filter(
         caseid__exact=caseid,
-        index__lt=event.index,
-    ).order_by('index').last()
+        index__exact=event.index - 1,
+    ).order_by('index').first()
 
     # if there is no next event, just use the current event
     if not prev_event:
@@ -99,7 +99,7 @@ def replay_next_event(request):
     caseid = event.caseid
     next_event = models.Event.objects.filter(
         caseid__exact=caseid,
-        index__gt=event.index,
+        index__exact=event.index + 1,
     ).order_by('index').first()
 
     # if there is no next event, just use the current event
@@ -275,5 +275,99 @@ def observation_update(request):
     return JsonResponse(data)
 
 
+def get_conformance_data(event_id):
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    if event.index == 0:
+        prev_event_str = '-'
+    else:
+        prev_event = models.Event.objects.filter(
+            index__exact=event.index - 1,
+            caseid__exact=event.caseid,
+        ).first()
+        prev_event_str = prev_event.activity
+
+    case_events = models.Event.objects.filter(
+        caseid__exact=event.caseid,
+        log__exact=event.log,
+        index__lte=event.index,
+    )
+
+    # compute total injected distance
+    total_injected_distance = case_events.values_list('injected_distance', flat=True)
+    total_injected_distance = sum(total_injected_distance)
+
+    # compute avg. conformance
+    avgconf = list(case_events.values_list('finalconf', flat=True))
+    avgconf = sum(avgconf) / len(avgconf)
+
+    # conformance table data
+    row_prev_event = {
+        'attribute': 'Previous event',
+        'value': prev_event_str,
+    }
+    row_event = {
+        'attribute': 'Current event',
+        'value': event.activity,
+    }
+    row_finalconf = {
+        'attribute': 'Final conformance',
+        'value': '{:.5f}'.format(event.finalconf),
+    }
+    row_injected_distance = {
+        'attribute': 'Injected distance',
+        'value': '{:.5f}'.format(event.injected_distance),
+    }
+    row_total_injected_distance = {
+        'attribute': 'Total injected distance',
+        'value': '{:.5f}'.format(total_injected_distance),
+    }
+    row_completeness = {
+        'attribute': 'Completeness',
+        'value': '{:.5f}'.format(event.completeness),
+    }
+    row_avg_conformance = {
+        'attribute': 'Avg. conformance',
+        'value': '{:.5f}'.format(avgconf),
+    }
+    table_data = [
+        row_prev_event,
+        row_event,
+        row_finalconf,
+        row_injected_distance,
+        row_total_injected_distance,
+        row_completeness,
+        row_avg_conformance
+    ]
+
+    return table_data
+
+
+def json_conformance_data(request, event_id):
+    table_data = get_conformance_data(event_id)
+
+    data = {
+        'table_data': table_data
+    }
+
+    return JsonResponse(data)
+
+
 def compute_conformance(request):
-    pass
+    event_id = request.GET.get('event_id', -1)
+    event = models.Event.objects.get(pk=event_id)
+    assert isinstance(event, models.Event)
+
+    file_barplot_state = event.get_file_barplot_logfwd()
+
+    table_data = get_conformance_data(event_id)
+
+    data = {
+        'event_id': event_id,
+        'barplot_state_url': file_barplot_state.url,
+        'barplot_state_name': file_barplot_state.name,
+        'table_data': table_data,
+    }
+
+    return JsonResponse(data)

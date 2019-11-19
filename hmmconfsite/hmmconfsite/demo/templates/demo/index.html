@@ -152,6 +152,33 @@
                 <h6 class="card-subtitle mb-2 text-muted">
                     Compute conformance between state estimation and current event
                 </h6>
+                <div class="row justify-content-md-center">
+                    <div class="col-4">
+                        <img 
+                            class="img-fluid"
+                            id="barplot-final-state"
+                            alt="Final state estimation"/>
+                    </div>
+                    <div class="col-md-auto">
+                        <table
+                            id="table-conformance"
+                            class="table-sm"
+                            data-toggle="table"
+                            data-url="{% url 'demo:json_conformance' event_id %}"
+                            data-row-style='RowStyle'>
+                            <thead>
+                                <tr>
+                                    <th 
+                                        data-field='attribute'
+                                        data-width='200'>Attribute</th>
+                                    <th 
+                                        data-field='value'
+                                        data-width='150'>Value</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -247,11 +274,36 @@
             });
         }
 
+        function compute_conformance(event_id) {
+            var url = $("div #compute-conformance").attr('data-compute-conformance-url');
+
+            info_msg = 'Getting images and table data of conformance computation for event: ' + event_id + ', url: ' + url;
+            console.log(info_msg);
+
+            $.ajax({
+                url: url,
+                data: {
+                    'csrfmiddlewaretoken': Cookies.get('csrftoken'),
+                    'event_id': event_id,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    info_msg = 'Got images and table data of conformance computation for event: ' + data.event_id;
+                    console.log(info_msg);
+
+                    // update figures
+                    $("#barplot-final-state").attr('src', data.barplot_state_url);
+                    $('#table-conformance').bootstrapTable('load', data.table_data);
+                }
+            });
+        }
+
         $(document).ready(function() {
             var event_id = $("div #replay_detail").attr('data-event-id');
             retrieve_record(event_id);
             state_transition(event_id);
             observation_update(event_id);
+            compute_conformance(event_id);
         });
 
         function replay_previous_event() {
@@ -283,6 +335,7 @@
                     retrieve_record(data.event_id);
                     state_transition(data.event_id);
                     observation_update(data.event_id);
+                    compute_conformance(data.event_id);
                 }
             });
         }
@@ -316,6 +369,7 @@
                     retrieve_record(data.event_id);
                     state_transition(data.event_id);
                     observation_update(data.event_id);
+                    compute_conformance(data.event_id);
                 }
             });
         }
