@@ -5,6 +5,7 @@ from . import views
 app_name = 'demo'
 urlpatterns = [
     path('', views.index, name='index'),
+    path('about', views.about, name='about'),
     path('upload_data', views.UploadDataView.as_view(), name='upload_data'),
     path('ajax/get_barplot_case', views.get_barplot_case, name='get_barplot_case'),
     path('event_stream/<int:event_id>', views.json_event_stream_data, name='json_event_stream'),

@@ -53,6 +53,13 @@ def index(request):
     return render(request, 'demo/index.html', context)
 
 
+def about(request):
+    context = {
+
+    }
+    return render(request, 'demo/about.html', context)
+
+
 def replay_previous_event(request):
     event_id = request.GET.get('event_id', -1)
     event = models.Event.objects.get(pk=event_id)

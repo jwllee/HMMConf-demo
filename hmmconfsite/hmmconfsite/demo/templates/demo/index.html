@@ -73,7 +73,7 @@
             id="retrieve-record"
             data-retrieve-record-url="{% url 'demo:retrieve_record' %}">
             <div class="row no-gutters">
-                <div class="col-md-4">
+                <div class="col-md-4 d-flex flex-wrap align-items-center">
                     <img 
                         class="img-fluid" 
                         id="barplot-start-state" 
@@ -89,7 +89,7 @@
                         <div class="row justify-content-md-center">
                             <img 
                                 class="img-fluid" 
-                                style="max-height: 270px;"
+                                style="max-height: 250px;"
                                 id="net-start-state" 
                                 alt="Model highlighted with mode state estimation"/>
                         </div>
@@ -102,7 +102,7 @@
             id="state-transition"
             data-state-transition-url="{% url 'demo:state_transition' %}">
             <div class="row no-gutters">
-                <div class="col-md-4">
+                <div class="col-md-4 d-flex flex-wrap align-items-center">
                     <img 
                         class="img-fluid" 
                         id="barplot-transition-state" 
@@ -118,7 +118,7 @@
                         <div class="row justify-content-md-center">
                             <img 
                                 class="img-fluid" 
-                                style="max-height: 270px;"
+                                style="max-height: 250px;"
                                 id="net-transition-state" 
                                 alt="Model highlighted with mode state estimation after state transition from previous event"/>
                         </div>
@@ -131,7 +131,7 @@
             id="observation-update"
             data-observation-update-url="{% url 'demo:observation_update' %}">
             <div class="row no-gutters">
-                <div class="col-md-4">
+                <div class="col-md-4 d-flex flex-wrap align-items-center">
                     <img 
                         class="img-fluid" 
                         id="barplot-observation-state" 
@@ -146,7 +146,7 @@
                         <div class="row justify-content-md-center">
                             <img 
                                 class="img-fluid" 
-                                style="max-height: 270px;"
+                                style="max-height: 250px;"
                                 id="net-observation-state" 
                                 alt="Model highlighted with mode state estimation after update with current event"/>
                         </div>
@@ -167,12 +167,19 @@
                 </div>
                 <div class="col-md-8">
                     <div class="card-body">
-                        <h5 class="card-title">4. Conformance computation</h5>
-                        <h6 class="card-subtitle mb-3 text-muted">
-                            Having computed the final state estimation, conformance of the event is computed with
-                            respect to the state estimation. 
-                        </h6>
                         <div class="row pl-3">
+                            <div class="col">
+                        <h5 class="card-title">4. Conformance computation</h5>
+                        <p class="card-text">
+                            Having computed the final state estimation, conformance of the current event is computed with
+                            respect to the current state estimation. 
+                        </p>
+                        <p class="card-text"> 
+                            Various other conformance metrics are also computed, 
+                            e.g., injected distance, and completeness.
+                        </p>
+                            </div>
+                            <div class="col">
                             <table
                                 id="table-conformance"
                                 class="table-sm"
@@ -190,6 +197,7 @@
                                     </tr>
                                 </thead>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

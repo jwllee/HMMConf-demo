@@ -25,8 +25,14 @@
                     {% endblock %}
                 </ul>
             </div>
-            {% block nav-buttons %}
-            {% endblock %}
+            <div class="button-group">
+                {% block nav-buttons %}
+                {% endblock %}
+                <a class="btn btn-outline-secondary ml-auto mr-1"
+                    href="{% url 'demo:about' %}">
+                    About
+                </a>
+            </div>
         </nav>
         <main role="main" class="container-fluid">
         <div class="jumbotron p-4">
