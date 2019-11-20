@@ -310,6 +310,10 @@ def get_conformance_data(event_id):
     avgconf = sum(avgconf) / len(avgconf)
 
     # conformance table data
+    row_caseid = {
+        'attribute': 'Case ID',
+        'value': event.caseid
+    }
     row_prev_event = {
         'attribute': 'Previous event',
         'value': prev_event_str,
@@ -339,6 +343,7 @@ def get_conformance_data(event_id):
         'value': '{:.5f}'.format(avgconf),
     }
     table_data = [
+        row_caseid,
         row_prev_event,
         row_event,
         row_finalconf,
