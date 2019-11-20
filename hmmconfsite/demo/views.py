@@ -14,7 +14,7 @@ def index(request):
 
     # there is no data, so make the user upload something
     if log is None:
-        return UploadDataView.as_view()
+        return UploadDataView.as_view()(request)
 
     if request.method == 'POST':
         case_select_form = forms.CaseChoiceSelectForm(request.POST)
