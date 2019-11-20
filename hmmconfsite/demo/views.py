@@ -211,13 +211,14 @@ class UploadDataView(FormView):
 def retrieve_record(request):
     event_id = request.GET.get('event_id', -1)
     event = models.Event.objects.get(pk=event_id)
+    log = models.Log.objects.first()
     assert isinstance(event, models.Event)
 
     # get previous state estimation or initial estimation
     if event.index == 0:
         # get initial estimation
-        file_barplot_state = event.log.get_file_barplot_logstartprob()
-        file_net_state = event.log.get_file_net_logstartprob()
+        file_barplot_state = log.get_file_barplot_logstartprob()
+        file_net_state = log.get_file_net_logstartprob()
     else:
         # the previous event's final state estimation
         prev_event = models.Event.objects.filter(
