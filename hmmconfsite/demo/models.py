@@ -642,6 +642,6 @@ def auto_delete_file_on_delete_event(sender, instance, **kwargs):
     if bool(instance.file_barplot_logfwd_before_obs):
         instance.file_barplot_logfwd_before_obs.delete(save=False)
     if bool(instance.file_net_logfwd):
-        instance.file_net_logfwd(save=False)
+        instance.file_net_logfwd.delete(save=False)
     if bool(instance.file_net_logfwd_before_obs):
         instance.file_net_logfwd_before_obs.delete(save=False)
