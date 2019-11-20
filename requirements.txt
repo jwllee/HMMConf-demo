@@ -23,4 +23,4 @@ django-storages
 python-decouple
 hmmconf
 django-heroku>=0.3.1
-gunicorn>=19.9.0
+gunicorn>=19.7.1
