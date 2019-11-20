@@ -51,5 +51,5 @@ class CaseChoiceSelectForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        first_events = models.Event.objects.filter(index__exact=0)
+        first_events = models.Event.objects.filter(index__exact=0).order_by('id')
         self.fields['case_select'].queryset = first_events
