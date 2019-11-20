@@ -403,7 +403,7 @@ class Event(models.Model):
         State, related_name='mode_state', on_delete=models.CASCADE
     )
     mode_state_before_obs = models.ForeignKey(
-        State, null=True, related_name='mode_state_before_obs', on_delete=models.CASCADE
+        State, null=True, blank=True, related_name='mode_state_before_obs', on_delete=models.CASCADE
     )
     is_train = models.BooleanField()
 
