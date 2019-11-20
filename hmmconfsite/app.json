@@ -1,0 +1,6 @@
+{
+  "name": "HMMConf demo",
+  "description": "Web demo of HMMConf",
+  "image": "heroku/python",
+  "addons": [ "heroku-postgresql" ],
+}
