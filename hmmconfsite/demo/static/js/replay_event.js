@@ -21,6 +21,9 @@ function retrieve_record(event_id) {
             // Update figures
             $("#barplot-start-state").attr('src', data.barplot_state_url);
             $("#net-start-state").attr('src', data.net_state_url);
+
+            // avoid simultaneously creation
+            state_transition(data.event_id);
         }
     });
 }
@@ -45,6 +48,9 @@ function state_transition(event_id) {
             // update figures
             $("#barplot-transition-state").attr('src', data.barplot_state_url);
             $("#net-transition-state").attr('src', data.net_state_url);
+
+            // avoid simultaneously creation
+            observation_update(data.event_id);
         }
     });
 }
@@ -69,6 +75,9 @@ function observation_update(event_id) {
             // update figures
             $("#barplot-observation-state").attr('src', data.barplot_state_url);
             $("#net-observation-state").attr('src', data.net_state_url);
+
+            // avoid simultaneous creation
+            compute_conformance(data.event_id);
         }
     });
 }
@@ -166,9 +175,6 @@ function replay_next_event() {
 
             // update replay detail children here
             retrieve_record(data.event_id);
-            state_transition(data.event_id);
-            observation_update(data.event_id);
-            compute_conformance(data.event_id);
         }
     });
 }
