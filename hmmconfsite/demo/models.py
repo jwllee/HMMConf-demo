@@ -334,6 +334,9 @@ class Log(models.Model):
         if self.file_barplot_logstartprob:
             return self.file_barplot_logstartprob
 
+        info_msg = 'Making file_barplot_logstartprob'
+        logger.info(info_msg)
+
         # create the negative log forward probability bar plot
         logfwd = np.load(self.file_logstartprob)
         fig, ax = make_neglogfwd_barplot(logfwd)
@@ -358,6 +361,9 @@ class Log(models.Model):
     def get_file_net_logstartprob(self):
         if self.file_net_logstartprob:
             return self.file_net_logstartprob
+
+        info_msg = 'Making file_net_logstartprob'
+        logger.info(info_msg)
 
         # create the highlighted net
         logfwd = np.load(self.file_logstartprob)
