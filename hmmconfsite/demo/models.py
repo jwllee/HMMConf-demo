@@ -331,7 +331,7 @@ class Log(models.Model):
         return self.file_barplot_case_unique_activity
 
     def get_file_barplot_logstartprob(self):
-        if bool(self.file_barplot_logstartprob) is True:
+        if self.file_barplot_logstartprob:
             return self.file_barplot_logstartprob
 
         # create the negative log forward probability bar plot
@@ -356,7 +356,7 @@ class Log(models.Model):
         return self.file_barplot_logstartprob
 
     def get_file_net_logstartprob(self):
-        if bool(self.file_net_logstartprob) is True:
+        if self.file_net_logstartprob:
             return self.file_net_logstartprob
 
         # create the highlighted net
@@ -442,7 +442,7 @@ class Event(models.Model):
         return repr_
 
     def get_file_barplot_logfwd(self):
-        if bool(self.file_barplot_logfwd) is True:
+        if self.file_barplot_logfwd:
             return self.file_barplot_logfwd
 
         # create the negative log forward probability bar plot
@@ -467,7 +467,7 @@ class Event(models.Model):
         return self.file_barplot_logfwd
 
     def get_file_barplot_logfwd_before_obs(self):
-        if bool(self.file_barplot_logfwd_before_obs) is True:
+        if self.file_barplot_logfwd_before_obs:
             return self.file_barplot_logfwd_before_obs
 
         # create the negative log forward probability bar plot
@@ -492,7 +492,7 @@ class Event(models.Model):
         return self.file_barplot_logfwd_before_obs
 
     def get_file_net_logfwd(self):
-        if bool(self.file_net_logfwd) is True:
+        if self.file_net_logfwd:
             return self.file_net_logfwd
 
         # create the highlighted net
@@ -515,7 +515,7 @@ class Event(models.Model):
         return self.file_net_logfwd
 
     def get_file_net_logfwd_before_obs(self):
-        if bool(self.file_net_logfwd_before_obs) is True:
+        if self.file_net_logfwd_before_obs:
             return self.file_net_logfwd_before_obs
 
         # create the highlighted net
@@ -625,23 +625,23 @@ def auto_delete_file_on_delete_log(sender, instance, **kwargs):
     instance.file_logemitmat_d.delete(save=False)
     instance.file_confmat.delete(save=False)
 
-    if bool(instance.file_barplot_case_length):
+    if instance.file_barplot_case_length:
         instance.file_barplot_case_length.delete(save=False)
-    if bool(instance.file_barplot_case_unique_activity):
+    if instance.file_barplot_case_unique_activity:
         instance.file_barplot_case_unique_activity.delete(save=False)
-    if bool(instance.file_barplot_startprob):
+    if instance.file_barplot_startprob:
         instance.file_barplot_startprob.delete(save=False)
-    if bool(instance.file_net_startprob):
+    if instance.file_net_startprob:
         instance.file_net_startprob.delete(save=False)
 
 
 @receiver(models.signals.post_delete, sender=Event)
 def auto_delete_file_on_delete_event(sender, instance, **kwargs):
-    if bool(instance.file_barplot_logfwd):
+    if instance.file_barplot_logfwd:
         instance.file_barplot_logfwd.delete(save=False)
-    if bool(instance.file_barplot_logfwd_before_obs):
+    if instance.file_barplot_logfwd_before_obs:
         instance.file_barplot_logfwd_before_obs.delete(save=False)
-    if bool(instance.file_net_logfwd):
+    if instance.file_net_logfwd:
         instance.file_net_logfwd.delete(save=False)
-    if bool(instance.file_net_logfwd_before_obs):
+    if instance.file_net_logfwd_before_obs:
         instance.file_net_logfwd_before_obs.delete(save=False)
