@@ -109,9 +109,6 @@ function compute_conformance(event_id) {
 $(document).ready(function() {
     var event_id = $("div #replay_detail").attr('data-event-id');
     retrieve_record(event_id);
-    state_transition(event_id);
-    observation_update(event_id);
-    compute_conformance(event_id);
 });
 
 function replay_previous_event() {
@@ -141,9 +138,6 @@ function replay_previous_event() {
 
             // update replay detail children here
             retrieve_record(data.event_id);
-            state_transition(data.event_id);
-            observation_update(data.event_id);
-            compute_conformance(data.event_id);
         }
     });
 }
